@@ -1,6 +1,6 @@
-/*! PhotoSwipe - v4.1.1 - 2015-12-24
+/*! PhotoSwipe - v4.1.1 - 2016-08-19
 * http://photoswipe.com
-* Copyright (c) 2015 Dmitry Semenov; */
+* Copyright (c) 2016 Dmitry Semenov; */
 (function (root, factory) { 
 	if (typeof define === 'function' && define.amd) {
 		define(factory);
@@ -3480,6 +3480,15 @@ var _historyUpdateTimeout,
 		var hash = _getHash(),
 			params = {};
 
+        if(_options.simpleHashes) {
+            if(hash.length == 0) {
+                return params;
+            } else if(!hash.includes('&')) {
+                // if hash is not an ampersand-delimited set of keys and
+                // values, interpret it as the pid
+                params.pid = hash;
+            }
+        } else {
 		if(hash.length < 5) { // pid=1
 			return params;
 		}
@@ -3489,12 +3498,13 @@ var _historyUpdateTimeout,
 			if(!vars[i]) {
 				continue;
 			}
-			var pair = vars[i].split('=');	
+			var pair = vars[i].split('=');
 			if(pair.length < 2) {
 				continue;
 			}
 			params[pair[0]] = pair[1];
 		}
+        }
 		if(_options.galleryPIDs) {
 			// detect custom pid in hash and search for it among the items collection
 			var searchfor = params.pid;
@@ -3540,7 +3550,11 @@ var _historyUpdateTimeout,
 			// carry forward any custom pid assigned to the item
 			pid = item.pid;
 		}
+		if(_options.simpleHashes) {
+			var newHash = _initialHash + pid;
+		} else {
 		var newHash = _initialHash + '&'  +  'gid=' + _options.galleryUID + '&' + 'pid=' + pid;
+		}
 
 		if(!_historyChanged) {
 			if(_windowLoc.hash.indexOf(newHash) === -1) {
@@ -3599,6 +3613,11 @@ _registerModule('History', {
 			_supportsPushState = ('pushState' in history);
 
 
+            if (options.simpleHashes) {
+                // if simple hash is enabled, there's nothing else in
+                // the hash besides the PID, so initialHash is empty
+                _initialHash = '';
+            }
 			if(_initialHash.indexOf('gid=') > -1) {
 				_initialHash = _initialHash.split('&gid=')[0];
 				_initialHash = _initialHash.split('?gid=')[0];

@@ -689,7 +689,13 @@ buildtool: false
 				var hash = window.location.hash.substring(1),
 			    params = {};
 
-			    if(hash.length < 5) { // pid=1
+			    if(hash.length == 0) {
+			        return params;
+			    } else if(!hash.includes('&')) {
+			        // if hash is not an ampersand-delimited set of keys and
+			        // values, interpret it as the pid and assume gid=1
+			        params.pid = hash;
+			        params.gid = 1;
 			        return params;
 			    }
 
@@ -723,6 +729,7 @@ buildtool: false
 			    // define options (if needed)
 			    options = {
 
+			        simpleHashes: true,
 			        galleryUID: galleryElement.getAttribute('data-pswp-uid'),
 
 			        getThumbBoundsFn: function(index) {
